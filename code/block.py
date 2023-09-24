@@ -1,7 +1,8 @@
+from typing import Any
 import pygame
 from pygame.locals import *
 from const import *
-
+from utils import *
 
 class Block(pygame.sprite.Sprite):
 
@@ -17,6 +18,10 @@ class Block(pygame.sprite.Sprite):
         self.width=width
         self.height=height
         self.relPos=relPos
+
+        self.blink = False
+        self.blinkCount = 0
+
         self.loadImage()
         self.updateImagePos()
 
@@ -47,6 +52,9 @@ class Block(pygame.sprite.Sprite):
 
 
     def draw(self,surface):
+        self.updateImagePos()
+        if self.blink and self.blinkCount & 2 ==1:
+            return
         surface.blit(self.image,self.rect)
  
     def drop(self):
@@ -74,3 +82,12 @@ class Block(pygame.sprite.Sprite):
         self.blockRot += 1
         if self.blockRot >= len(BLOCK_SHAPE[self.blockShape]):
             self.blockRot = 0
+
+    def startBlink(self):
+        self.blink = True
+        self.blinkTime = getCurrentTime()
+    
+    def update(self):
+        if self.blink:
+            diffTime = getCurrentTime() - self.blinkTime
+            self.blinkCount = int(diffTime / 30)

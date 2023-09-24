@@ -40,6 +40,8 @@ class BlockGroup(object):
         self.pressTime = {}
         self.blockGroupType = blokGroupType
         self.dropInterval = 0
+        self.isEliminating = False
+        self.eliminateRow = 0
         for config in blockConfigList:
             blk=Block(config['blockType'],config['rowIdx'],config['colIdx'],config['blockShape'],config['blockRot'],config['blockGroupIdx'],width,height,relPos)
             self.blocks.append(blk)
@@ -47,18 +49,6 @@ class BlockGroup(object):
     def draw(self,surface):
         for b in self.blocks:
             b.draw(surface) 
-
-    def update(self):
-        oldTime = self.time
-        curTime = getCurrentTime()
-        diffTime = curTime - oldTime
-        if self.blockGroupType == BlockGroupType.DROP:
-            if diffTime>=self.dropInterval:
-                self.time = curTime
-                for b in self.blocks:
-                    b.drop()
-
-            self.keyDownHandler()
 
     def getBlockIndexes(self):
         return [block.getIndex() for block in self.blocks]
@@ -85,7 +75,7 @@ class BlockGroup(object):
     
     def keyDownHandler(self):
         pressed = pygame.key.get_pressed()
-        if pressed[K_LEFT] and self.checkAndSetPressTime(K_LEFT):
+        if pressed[K_LEFT] and self.checkAndSetPressTime(K_LEFT) and self.blockGroupType == BlockGroupType.DROP:
             b = True
             for blk in self.blocks:
                 if blk.isLeftBound():
@@ -95,7 +85,7 @@ class BlockGroup(object):
                 for blk in self.blocks:
                     blk.doLeft()
 
-        elif pressed[K_RIGHT] and self.checkAndSetPressTime(K_RIGHT):
+        elif pressed[K_RIGHT] and self.checkAndSetPressTime(K_RIGHT) and self.blockGroupType == BlockGroupType.DROP:
             b = True
             for blk in self.blocks:
                 if blk.isRightBound():
@@ -110,8 +100,67 @@ class BlockGroup(object):
         else:
             self.dropInterval = 300
 
-        if pressed[K_UP] and self.checkAndSetPressTime(K_UP):
+        if pressed[K_UP] and self.checkAndSetPressTime(K_UP) and self.blockGroupType == BlockGroupType.DROP:
             for blk in self.blocks:
                 blk.doRotate()
 
+    def update(self):
+        oldTime = self.time
+        curTime = getCurrentTime()
+        diffTime = curTime - oldTime
+        if self.blockGroupType == BlockGroupType.DROP:
+            if diffTime>=self.dropInterval:
+                self.time = curTime
+                for b in self.blocks:
+                    b.drop()
+        for blk in self.blocks:
+            blk.update()
 
+        if self.IsEliminating():
+            if getCurrentTime() - self.eliminateTime > 500:
+                tmpBlocks = []
+                for blk in self.blocks:
+                    if blk.getIndex()[0] != self.eliminateRow:
+                        if blk.getIndex()[0] < self.eliminateRow:
+                            blk.drop()
+                        tmpBlocks.append(blk)
+                    self.blocks = tmpBlocks
+                    self.setEliminate(False)
+    
+        self.keyDownHandler()
+
+    def doEliminate(self,row):
+        eliminateRow = {}
+        for col in range(0,GAME_COL):
+            idx = (row,col)
+            eliminateRow[idx]=1
+        
+        for blk in self.blocks:
+            if eliminateRow.get(blk.getIndex()):
+                blk.startBlink()
+
+    def processEliminate(self):
+        hash = {}
+
+        allIndexes = self.getBlockIndexes()
+        for idx in allIndexes:
+            hash[idx] = 1
+        
+        for row in range(GAME_ROW-1,-1,-1):
+            full = True
+            for col in range(0,GAME_COL):
+                idx = (row,col)
+                if not hash.get(idx):
+                    full = False
+                    break
+            if full:
+                self.setEliminate(True)
+                self.eliminateRow = row
+                self.doEliminate(row)
+                return
+                
+    def setEliminate(self,bEl):
+        self.isEliminating = bEl
+        self.eliminateTime = getCurrentTime()
+    def IsEliminating(self):
+        return self.isEliminating

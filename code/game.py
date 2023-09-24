@@ -16,30 +16,7 @@ class Game(pygame.sprite.Sprite):
     def generateDropBlockGroup(self):
         conf = BlockGroup.GenerateBlockGroupConfig(0,GAME_COL/2-1)
         self.dropBlockGroup = BlockGroup(BlockGroupType.DROP, BLOCK_SIZE_W,BLOCK_SIZE_H,conf,self.getPelPos())
-
-
-    def update(self):
-        self.fixedBlockGroup.update()
-        if self.dropBlockGroup:
-            self.dropBlockGroup.update()
-        else:
-            self.generateDropBlockGroup()
-
-        if self.willCollide():
-            blocks =self.dropBlockGroup.getBlocks()
-            for blk in blocks:
-                self.fixedBlockGroup.addBlocks(blk)
-            
-            self.dropBlockGroup.clearBlocks()
-            self.dropBlockGroup = None
-
-    def draw(self):
-        self.fixedBlockGroup.draw(self.surface)
-        if self.dropBlockGroup:
-            self.dropBlockGroup.draw(self.surface)
-        else:
-            self.generateDropBlockGroup()
-    
+  
     def getPelPos(self):
         return [250,0]
     
@@ -57,4 +34,29 @@ class Game(pygame.sprite.Sprite):
                 return True
             
         return False
+    
+    def update(self):
+        self.fixedBlockGroup.update()
+        if self.fixedBlockGroup.IsEliminating():
+            return
+        if self.dropBlockGroup:
+            self.dropBlockGroup.update()
+        else:
+            self.generateDropBlockGroup()
+
+        if self.willCollide():
+            blocks =self.dropBlockGroup.getBlocks()
+            for blk in blocks:
+                self.fixedBlockGroup.addBlocks(blk)
+            
+            self.dropBlockGroup.clearBlocks()
+            self.dropBlockGroup = None
+            self.fixedBlockGroup.processEliminate()
+
+    def draw(self):
+        self.fixedBlockGroup.draw(self.surface)
+        if self.dropBlockGroup:
+            self.dropBlockGroup.draw(self.surface)
+        else:
+            self.generateDropBlockGroup()
     
