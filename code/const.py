@@ -13,13 +13,13 @@ class BlockGroupType:
     DROP=1
 
 BLOCK_RES={
-    BlockType.RED:"G:\\Tetris\\pic\\red.png",
-    BlockType.ORANGE:"G:\\Tetris\\pic\\orange.png",
-    BlockType.YELLOW:"G:\\Tetris\\pic\\yellow.png",
-    BlockType.GREEN:"G:\\Tetris\\pic\\green.png",
-    BlockType.CYAN:"G:\\Tetris\\pic\\green.png",
-    BlockType.BLUE:"G:\\Tetris\\pic\\cyan.png",
-    BlockType.PURPLE:"G:\\Tetris\\pic\\purple.png",
+    BlockType.RED:"pic\\red.png",
+    BlockType.ORANGE:"pic\\orange.png",
+    BlockType.YELLOW:"pic\\yellow.png",
+    BlockType.GREEN:"pic\\green.png",
+    BlockType.CYAN:"pic\\green.png",
+    BlockType.BLUE:"pic\\cyan.png",
+    BlockType.PURPLE:"pic\\purple.png",
 }
 
 GAME_ROW=17
